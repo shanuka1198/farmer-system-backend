@@ -8,7 +8,9 @@ exports.createOrder = async (req, res) => {
   try {
     const { orderDate, totalPrice, status, farmer_id } = req.body;
     // Get admin_id from the authenticated user (e.g., req.user.userId)
-    const admin_id = req.user?.userId;
+    const admin_id = req.user?.id;
+
+    console.log("Admin ID:", admin_id);
 
     if (
       orderDate === undefined ||

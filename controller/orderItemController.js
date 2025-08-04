@@ -17,7 +17,10 @@ exports.createOrderItem = async (req, res) => {
         if (!existingOrder) {
             return res.status(404).json({ message: `Order with ID ${order_Id} not found` });
         }
-        const newOrderItem = await OrderItem.create({ quantity, orderPrice, product_Id, order_Id });
+
+        const totalPrice=existingProduct.price*quantity
+        console.log(totalPrice)
+        const newOrderItem = await OrderItem.create({ quantity, orderPrice:totalPrice, product_Id, order_Id });
         res.status(201).json(newOrderItem);
     } catch (error) {
         console.error("Error creating order item:", error);
