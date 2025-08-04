@@ -9,5 +9,6 @@ orderItemRouter.get("/",userVerify, orderItemController.getAllOrderItems);
 orderItemRouter.get("/:id",userVerify, orderItemController.getOrderItemById);
 orderItemRouter.put("/:id",userVerify,adminRole, orderItemController.updateOrderItem);
 orderItemRouter.delete("/:id",userVerify,adminRole, orderItemController.deleteOrderItem);
+orderItemRouter.get("/order/:orderId", userVerify, orderItemController.getOrderItemsByOrderId);
 
 module.exports = orderItemRouter;

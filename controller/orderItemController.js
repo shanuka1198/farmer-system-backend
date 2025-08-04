@@ -114,3 +114,18 @@ exports.deleteOrderItem = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+exports.getOrderItemsByOrderId = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const orderItems = await OrderItem.findAll({ where: { order_Id: orderId } });
+        if (orderItems.length === 0) {
+            return res.status(404).json({ message: `No order items found for order ID ${orderId}` });
+        }
+        res.status(200).json(orderItems);
+    } catch (error) {
+        console.error("Error fetching order items by order ID:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
