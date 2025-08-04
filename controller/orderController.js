@@ -6,7 +6,10 @@ const OrderItems = db.orderItems;
 // Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { orderDate, totalPrice, status, farmer_id, admin_id } = req.body;
+    const { orderDate, totalPrice, status, farmer_id } = req.body;
+    // Get admin_id from the authenticated user (e.g., req.user.userId)
+    const admin_id = req.user?.userId;
+
     if (
       orderDate === undefined ||
       totalPrice === undefined ||
@@ -14,25 +17,23 @@ exports.createOrder = async (req, res) => {
       farmer_id === undefined
     ) {
       return res.status(400).json({
-        message:
-          "Order date, total price, status, and farmer_id are required",
+        message: "Order date, total price, status, and farmer_id are required",
       });
     }
+
     const farmer = await Users.findByPk(farmer_id);
     if (!farmer) {
       return res
         .status(404)
         .json({ message: `User (farmer) with ID ${farmer_id} not found` });
     }
-    let admin = null;
-    if (admin_id) {
-      admin = await Users.findByPk(admin_id);
-      if (!admin) {
-        return res
-          .status(404)
-          .json({ message: `User (admin) with ID ${admin_id} not found` });
-      }
+
+    // Optionally, check if the current user is actually an admin
+    const admin = await Users.findByPk(admin_id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ message: "Only admin can create orders" });
     }
+
     const newOrder = await Order.create({
       orderDate,
       totalPrice,
@@ -76,11 +77,20 @@ exports.getOrderById = async (req, res) => {
 exports.updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { orderDate, totalPrice, status, farmer_id, admin_id } = req.body;
+    const { orderDate, totalPrice, status, farmer_id } = req.body;
+    const admin_id = req.user?.userId; // Get admin_id from authenticated user
+
+    // Optionally, check if the current user is actually an admin
+    const admin = await Users.findByPk(admin_id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ message: "Only admin can update orders" });
+    }
+
     const foundOrder = await Order.findByPk(id);
     if (!foundOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
+
     if (farmer_id) {
       const farmer = await Users.findByPk(farmer_id);
       if (!farmer) {
@@ -90,15 +100,8 @@ exports.updateOrder = async (req, res) => {
       }
       foundOrder.farmer_id = farmer_id;
     }
-    if (admin_id) {
-      const admin = await Users.findByPk(admin_id);
-      if (!admin) {
-        return res
-          .status(404)
-          .json({ message: `User (admin) with ID ${admin_id} not found` });
-      }
-      foundOrder.admin_id = admin_id;
-    }
+
+    foundOrder.admin_id = admin_id; // Always set admin_id from the authenticated user
     foundOrder.orderDate = orderDate ?? foundOrder.orderDate;
     foundOrder.totalPrice = totalPrice ?? foundOrder.totalPrice;
     foundOrder.status = status ?? foundOrder.status;
