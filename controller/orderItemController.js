@@ -55,18 +55,26 @@ exports.getOrderItemById = async (req, res) => {
 exports.updateOrderItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const { quantity, orderPrice, product_Id, order_Id } = req.body;
+        const { quantity, product_Id, order_Id } = req.body;
+
         const foundOrderItem = await OrderItem.findByPk(id);
         if (!foundOrderItem) {
             return res.status(404).json({ message: "Order item not found" });
         }
+
+        // If product_Id is being updated, validate it and update orderPrice accordingly
         if (product_Id !== undefined) {
             const existingProduct = await Product.findByPk(product_Id);
             if (!existingProduct) {
                 return res.status(404).json({ message: `Product with ID ${product_Id} not found` });
             }
             foundOrderItem.product_Id = product_Id;
+            // If quantity is also being updated, use new quantity, else use existing
+            const qty = quantity !== undefined ? quantity : foundOrderItem.quantity;
+            foundOrderItem.orderPrice = existingProduct.price * qty;
         }
+
+        // If order_Id is being updated, validate it
         if (order_Id !== undefined) {
             const existingOrder = await Order.findByPk(order_Id);
             if (!existingOrder) {
@@ -74,8 +82,17 @@ exports.updateOrderItem = async (req, res) => {
             }
             foundOrderItem.order_Id = order_Id;
         }
-        if (quantity !== undefined) foundOrderItem.quantity = quantity;
-        if (orderPrice !== undefined) foundOrderItem.orderPrice = orderPrice;
+
+        // If quantity is being updated, update it and recalculate orderPrice if product is not being changed
+        if (quantity !== undefined) {
+            foundOrderItem.quantity = quantity;
+            if (product_Id === undefined) {
+                // Use current product price
+                const existingProduct = await Product.findByPk(foundOrderItem.product_Id);
+                foundOrderItem.orderPrice = existingProduct.price * quantity;
+            }
+        }
+
         await foundOrderItem.save();
         res.status(200).json(foundOrderItem);
     } catch (error) {
