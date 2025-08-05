@@ -8,8 +8,10 @@ const orderItemRouter = require('./routes/orderItemRoutes.js');
 const orderRouter = require('./routes/orderRoutes.js'); 
 
 const app = express();
+const cors = require('cors');
 app.use(express.json());
 require('dotenv').config();
+app.use(cors());
 
 app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
