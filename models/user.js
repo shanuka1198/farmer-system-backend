@@ -15,13 +15,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-       
       },
       address: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      Phone: {
+      phone: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -30,16 +29,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       role: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("admin", "user"),
         allowNull: false,
-        enum: ["admin", "user"],
-        validate: {
-          isIn: [["admin", "user"]],
-        },
         defaultValue: "user",
       },
-      
-    },{
+    },
+    {
       timestamps: true,
       tableName: "Users",
     }
