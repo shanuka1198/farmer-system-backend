@@ -5,16 +5,20 @@ const jwt = require("jsonwebtoken");
 
 exports.userRegister = async (req, res) => {
     try {
-        const { name, email, address, Phone, password, role } = req.body;
-        if (!name || !email || !address || !Phone || !password) {
+        const { name, email, address, phone, password, role } = req.body;
+
+        console.log(phone)
+
+        if (!name || !email || !address || !phone || !password) {
             return res.status(400).json({ message: "All fields are required" });
         }
+        
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ name, email, address, Phone, password: hashedPassword, role });
+        const user = await User.create({ name, email, address, phone, password: hashedPassword, role });
         res.status(201).json(user);
     } catch (error) {
         console.error("Error creating user:", error);
@@ -64,7 +68,7 @@ exports.deleteUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const userId = req.params.id;
-        const { name, email, address, Phone, password, role } = req.body;
+        const { name, email, address, phone, password, role } = req.body;
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -72,7 +76,7 @@ exports.updateUser = async (req, res) => {
         user.name = name || user.name;
         user.email = email || user.email;
         user.address = address || user.address;
-        user.Phone = Phone || user.Phone;
+        user.phone = phone || user.phone;
         if (password) user.password = await bcrypt.hash(password, 10);
         user.role = role || user.role;
         await user.save();
