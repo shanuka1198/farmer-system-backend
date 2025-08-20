@@ -8,6 +8,11 @@ exports.userRegister = async (req, res) => {
         const { name, email, address, phone, password, role } = req.body;
 
         console.log(phone)
+         console.log(email)
+          console.log(address)
+           console.log(password)
+            console.log(name)
+            console.log(role)
 
         if (!name || !email || !address || !phone || !password) {
             return res.status(400).json({ message: "All fields are required" });
